@@ -48,8 +48,8 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
+        @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
         @droplet
-          .add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
           .add_environment_variable('SEEKER_SENSOR_HOST', credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
           .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
       end
