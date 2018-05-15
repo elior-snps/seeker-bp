@@ -47,7 +47,7 @@ module JavaBuildpack
         mandatory_config_keys =
           [AGENT_ARTIFACT_SERVICE_CONFIG_KEY, SEEKER_HOST_SERVICE_CONFIG_KEY, SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
         mandatory_config_keys.each do |config_key|
-          raise "'#{config_key}{' credential must be set" unless credentials[config_key]
+          raise "'#{config_key}' credential must be set" unless credentials[config_key]
         end
       end
 
