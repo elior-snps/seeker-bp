@@ -36,6 +36,12 @@ module JavaBuildpack
         @droplet.copy_resources
       end
 
+      # extract seeker relevant configuration as map
+      def fetch_credentials
+        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
+        service['credentials']
+      end
+
       # verify required agent configuration is present
       def assert_configuration_valid(credentials)
         mandatory_config_keys =
@@ -67,12 +73,6 @@ module JavaBuildpack
 
       private_constant :SEEKER_HOST_SERVICE_CONFIG_KEY, :SEEKER_HOST_PORT_SERVICE_CONFIG_KEY,
                        :AGENT_ARTIFACT_SERVICE_CONFIG_KEY, :AGENT_ARTIFACT_SERVICE_CONFIG_KEY
-    end
-
-    # extract seeker relevant configuration as map
-    def fetch_credentials
-      service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-      service['credentials']
     end
   end
 end
