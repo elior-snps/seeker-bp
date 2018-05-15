@@ -48,6 +48,8 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
+        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
+        @credentials = service['credentials']
         @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
         @droplet.environment_variables
                 .add_environment_variable('SEEKER_SENSOR_HOST', @credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
