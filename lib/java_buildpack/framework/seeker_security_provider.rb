@@ -40,7 +40,7 @@ module JavaBuildpack
           puts "creds are nil !"
         end
         assert_configuration_valid(creds)
-        download_tar('', creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], true, @droplet.sandbox)
+        download_tar('', creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], false, @droplet.sandbox)
         @droplet.copy_resources
       end
 
@@ -58,7 +58,7 @@ module JavaBuildpack
       def release
         service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
         creds = service['credentials']
-        @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
+        @droplet.java_opts.add_javaagent(@droplet.sandbox + '.java-buildpack/seeker_security_provider/seeker-agent.jar')
         @droplet.environment_variables
           .add_environment_variable('SEEKER_SENSOR_HOST', creds[SEEKER_HOST_SERVICE_CONFIG_KEY])
           .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', creds[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
