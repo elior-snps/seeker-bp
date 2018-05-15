@@ -31,35 +31,37 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
         service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-        credentials = service['credentials']
-        if credentials != nil
-          credentials.each do |key, value|
+        creds = service['credentials']
+        if creds != nil
+          creds.each do |key, value|
             puts "#{key} is #{value}"
           end
         else
-          puts "credentials are nil !"
+          puts "creds are nil !"
         end
-        assert_configuration_valid(credentials)
-        download_tar('', credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], true, @droplet.sandbox)
+        assert_configuration_valid(creds)
+        download_tar('', creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], true, @droplet.sandbox)
         @droplet.copy_resources
       end
 
       # Verefies required agent configuration is present
-      def assert_configuration_valid(credentials)
+      def assert_configuration_valid(creds)
         raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}' credential must be set" unless
-          credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY]
+          creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY]
         raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}' credential must be set" unless
-          credentials[SEEKER_HOST_SERVICE_CONFIG_KEY]
+          creds[SEEKER_HOST_SERVICE_CONFIG_KEY]
         raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}'credential must be set" unless
-          credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
+          creds[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
+        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
+        creds = service['credentials']
         @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
         @droplet
-          .add_environment_variable('SEEKER_SENSOR_HOST', credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
-          .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
+          .add_environment_variable('SEEKER_SENSOR_HOST', creds[SEEKER_HOST_SERVICE_CONFIG_KEY])
+          .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', creds[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
       end
 
       SEEKER_HOST_SERVICE_CONFIG_KEY = 'sensor_host'
