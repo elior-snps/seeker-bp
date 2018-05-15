@@ -69,8 +69,7 @@ module JavaBuildpack
                        :AGENT_ARTIFACT_SERVICE_CONFIG_KEY, :AGENT_ARTIFACT_SERVICE_CONFIG_KEY
     end
 
-    private
-
+    # extract seeker relevant configuration as map
     def fetch_credentials
       service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
       service['credentials']
