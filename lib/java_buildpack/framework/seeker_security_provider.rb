@@ -30,30 +30,28 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-        @credentials = service['credentials']
-        assert_configuration_valid
-        download_tar('', @credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], false, @droplet.sandbox)
+        credentials = fetch_credentials
+        assert_configuration_valid(credentials)
+        download_tar('', credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], false, @droplet.sandbox)
         @droplet.copy_resources
       end
 
       # verify required agent configuration is present
-      def assert_configuration_valid
+      def assert_configuration_valid(credentials)
         mandatory_config_keys =
           [AGENT_ARTIFACT_SERVICE_CONFIG_KEY, SEEKER_HOST_SERVICE_CONFIG_KEY, SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
         mandatory_config_keys.each do |config_key|
-          raise "'#{config_key}{' credential must be set" unless @credentials[config_key]
+          raise "'#{config_key}{' credential must be set" unless credentials[config_key]
         end
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
-        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-        @credentials = service['credentials']
+        credentials = fetch_credentials
         @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
         @droplet.environment_variables
-                .add_environment_variable('SEEKER_SENSOR_HOST', @credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
-                .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', @credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
+                .add_environment_variable('SEEKER_SENSOR_HOST', credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
+                .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
       end
 
       # JSON key for the host of the seeker sensor
@@ -69,8 +67,13 @@ module JavaBuildpack
 
       private_constant :SEEKER_HOST_SERVICE_CONFIG_KEY, :SEEKER_HOST_PORT_SERVICE_CONFIG_KEY,
                        :AGENT_ARTIFACT_SERVICE_CONFIG_KEY, :AGENT_ARTIFACT_SERVICE_CONFIG_KEY
-
     end
 
+    private
+
+    def fetch_credentials
+      service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
+      service['credentials']
+    end
   end
 end
