@@ -30,13 +30,14 @@ module JavaBuildpack
 
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
-        credentials = @application.services.find_service(FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY)['credentials']
-        if credentials!=nill
+        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
+        credentials = service['credentials']
+        if credentials != nil
           credentials.each do |key, value|
             puts "#{key} is #{value}"
           end
         else
-          puts "credentials are nil!!"
+          puts "credentials are nil !"
         end
         assert_configuration_valid(credentials)
         download_tar('', credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], true, @droplet.sandbox)
