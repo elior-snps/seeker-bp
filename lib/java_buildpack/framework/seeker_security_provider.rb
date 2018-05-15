@@ -31,45 +31,38 @@ module JavaBuildpack
       # (see JavaBuildpack::Component::BaseComponent#compile)
       def compile
         service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-        creds = service['credentials']
-        if creds != nil
-          creds.each do |key, value|
-            puts "#{key} is #{value}"
-          end
-        else
-          puts "creds are nil !"
-        end
-        assert_configuration_valid(creds)
-        download_tar('', creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], false, @droplet.sandbox)
+        @credentials = service['credentials']
+        assert_configuration_valid
+        download_tar('', @credentials[AGENT_ARTIFACT_SERVICE_CONFIG_KEY], false, @droplet.sandbox)
         @droplet.copy_resources
       end
 
-      # Verefies required agent configuration is present
-      def assert_configuration_valid(creds)
-        raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}' credential must be set" unless
-          creds[AGENT_ARTIFACT_SERVICE_CONFIG_KEY]
-        raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}' credential must be set" unless
-          creds[SEEKER_HOST_SERVICE_CONFIG_KEY]
-        raise "'#{AGENT_ARTIFACT_SERVICE_CONFIG_KEY}'credential must be set" unless
-          creds[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
+      # verify required agent configuration is present
+      def assert_configuration_valid
+        mandatory_config_keys =
+          [AGENT_ARTIFACT_SERVICE_CONFIG_KEY, SEEKER_HOST_SERVICE_CONFIG_KEY, SEEKER_HOST_PORT_SERVICE_CONFIG_KEY]
+        mandatory_config_keys.each do |config_key|
+          raise "'#{config_key}{' credential must be set" unless @credentials[config_key]
+        end
       end
 
       # (see JavaBuildpack::Component::BaseComponent#release)
       def release
-        service = @application.services.find_service FILTER, SEEKER_HOST_SERVICE_CONFIG_KEY
-        creds = service['credentials']
         @droplet.java_opts.add_javaagent(@droplet.sandbox + 'seeker-agent.jar')
         @droplet.environment_variables
-          .add_environment_variable('SEEKER_SENSOR_HOST', creds[SEEKER_HOST_SERVICE_CONFIG_KEY])
-          .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', creds[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
+                .add_environment_variable('SEEKER_SENSOR_HOST', @credentials[SEEKER_HOST_SERVICE_CONFIG_KEY])
+                .add_environment_variable('SEEKER_SENSOR_HTTP_PORT', @credentials[SEEKER_HOST_PORT_SERVICE_CONFIG_KEY])
       end
 
+      # JSON key for the host of the seeker sensor
       SEEKER_HOST_SERVICE_CONFIG_KEY = 'sensor_host'
 
+      # JSON key for the port of the seeker sensor
       SEEKER_HOST_PORT_SERVICE_CONFIG_KEY = 'sensor_port'
+
       # In the future Seeker's will expose REST endpoint for downloading the agent from the enterprise server (tgz file)
       AGENT_ARTIFACT_SERVICE_CONFIG_KEY = 'agent_uri'
-      # seeker service substring
+      # seeker service name identifier
       FILTER = /seeker/
 
       private_constant :SEEKER_HOST_SERVICE_CONFIG_KEY, :SEEKER_HOST_PORT_SERVICE_CONFIG_KEY,
